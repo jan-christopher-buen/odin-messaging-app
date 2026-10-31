@@ -335,3 +335,41 @@ test('authentication endpoints have a bounded shared attempt budget', async () =
   assert.equal(result.status, 429)
   assert.match(result.body.error, /Too many attempts/)
 })
+
+test('search caps results and conversation ordering breaks activity ties by ID', async () => {
+  const { passwordHash } = await db.user.findUnique({
+    where: { id: alice.user.id },
+    select: { passwordHash: true },
+  })
+  await db.user.createMany({
+    data: Array.from({ length: 15 }, (_, index) => ({
+      username: `limit_${String(index).padStart(2, '0')}`,
+      displayName: 'Fictional member',
+      passwordHash,
+    })),
+  })
+  const search = await alice.agent.get('/api/users?q=limit_')
+  assert.equal(search.body.users.length, 12)
+  assert.deepEqual(
+    search.body.users.map((user) => user.username),
+    Array.from(
+      { length: 12 },
+      (_, index) => `limit_${String(index).padStart(2, '0')}`,
+    ),
+  )
+  assert.ok(search.body.users.every((user) => !('passwordHash' in user)))
+  assert.equal(
+    (await alice.mutate('/conversations', { userId: eve.user.id })).status,
+    200,
+  )
+  await db.conversation.updateMany({
+    data: { updatedAt: new Date('2026-01-01T00:00:00Z') },
+  })
+  const list = await eve.agent.get('/api/conversations')
+  const ids = list.body.conversations.map((conversation) => conversation.id)
+  assert.equal(ids.length, 2)
+  assert.deepEqual(
+    ids,
+    [...ids].sort((a, b) => b - a),
+  )
+})
