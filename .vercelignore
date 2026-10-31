@@ -1,0 +1,13 @@
+.git
+.env*
+.agents
+.codex
+.aws
+.playwright-mcp
+node_modules
+**/node_modules
+**/.env
+**/.env.*
+**/generated
+**/dist
+**/coverage
