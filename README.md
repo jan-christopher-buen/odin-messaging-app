@@ -2,6 +2,8 @@
 
 A thoughtful, text-only messaging app built for [The Odin Project’s Messaging App assignment](https://www.theodinproject.com/lessons/nodejs-messaging-app). A coral and slate interface keeps the conversation in focus, with a dedicated mobile inbox and chat view.
 
+[Live app](https://signal-post-rho.vercel.app) · [API health](https://signal-post-api.onrender.com/health)
+
 ## Features
 
 - Create an account, log in, restore a session, and log out.
@@ -67,12 +69,12 @@ For preview mode, keep the API running with `npm start -w server` in another ter
 
 API tests refuse cleanup unless the URL names the dedicated local test database and Unix socket. They delete only that database’s app data. Migrations must run against the test database before tests.
 
-## Deployment preparation
+## Deployment
 
-No hosted resources are required for local use. See [deployment instructions](docs/deployment.md) for Neon PostgreSQL, Render API, and Vercel frontend setup, including the proxy and cookie verification required before release.
+The hosted app uses a dedicated Neon PostgreSQL database, a Render API in Singapore, and a Vercel frontend. All use free plans. See [deployment instructions](docs/deployment.md) for build commands, migrations, environment variables, and the same-origin API proxy. Local use does not require hosted resources.
 
 ## Limitations
 
-Messages require manual refresh. No WebSockets, presence, uploads, group chat, notifications, read receipts, account recovery, or email verification. Drafts live in memory and are cleared on logout or page reload. User search exposes intentionally public profile fields to signed-in members. Conversation lists are currently unpaginated; message history and user search are bounded. The process-local authentication rate limiter suits a single API instance; shared rate limiting is needed before horizontal scaling.
+Messages require manual refresh. No WebSockets, presence, uploads, group chat, notifications, read receipts, account recovery, or email verification. Drafts live in memory and are cleared on logout or page reload. User search exposes intentionally public profile fields to signed-in members. Conversation lists are currently unpaginated; message history and user search are bounded. The process-local authentication rate limiter suits a single API instance; shared rate limiting is needed before horizontal scaling. The free Render API sleeps after inactivity, so the first request can take longer. Availability is subject to the providers’ free-plan quotas.
 
 Typography: [DM Sans](https://fonts.google.com/specimen/DM+Sans) and [Manrope](https://fonts.google.com/specimen/Manrope), served by Google Fonts with system-font fallbacks.
