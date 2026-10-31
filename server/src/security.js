@@ -5,7 +5,7 @@ import { Strategy } from 'passport-local'
 import bcrypt from 'bcrypt'
 import { randomBytes, timingSafeEqual } from 'node:crypto'
 import { db, pool, publicUser } from './db.js'
-export const cookieName =
+export const cookieName = () =>
   process.env.NODE_ENV === 'production' ? '__Host-signal' : 'signal.sid'
 export function authentication(app) {
   const production = process.env.NODE_ENV === 'production'
@@ -17,7 +17,7 @@ export function authentication(app) {
   app.set('trust proxy', production ? 1 : false)
   app.use(
     session({
-      name: cookieName,
+      name: cookieName(),
       store: new (connectPg(session))({ pool, tableName: 'session' }),
       secret: process.env.SESSION_SECRET,
       resave: false,

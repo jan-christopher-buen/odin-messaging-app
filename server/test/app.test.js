@@ -301,3 +301,37 @@ test('expired database sessions are rejected', async () => {
     401,
   )
 })
+
+test('production cookies are secure and narrowly trust the HTTPS ingress', async () => {
+  const previous = process.env.NODE_ENV
+  process.env.NODE_ENV = 'production'
+  const origin = process.env.APP_ORIGIN
+  process.env.APP_ORIGIN = 'https://signal.example'
+  try {
+    const production = createApp()
+    assert.equal(production.get('trust proxy'), 1)
+    const response = await request(production)
+      .get('/api/session')
+      .set('X-Forwarded-Proto', 'https')
+    assert.match(response.headers['set-cookie'][0], /__Host-signal=/)
+    assert.match(response.headers['set-cookie'][0], /; Secure/)
+    assert.match(response.headers['set-cookie'][0], /; HttpOnly/)
+    assert.match(response.headers['set-cookie'][0], /; SameSite=Lax/)
+    assert.doesNotMatch(response.headers['set-cookie'][0], /Domain=/)
+    assert.equal(response.headers['cache-control'], 'no-store')
+    const http = await request(production).get('/api/session')
+    assert.equal(http.headers['set-cookie'], undefined)
+  } finally {
+    process.env.NODE_ENV = previous
+    process.env.APP_ORIGIN = origin
+  }
+})
+
+test('authentication endpoints have a bounded shared attempt budget', async () => {
+  const person = client()
+  await person.init()
+  let result
+  for (let i = 0; i < 31; i++) result = await person.mutate('/login', {})
+  assert.equal(result.status, 429)
+  assert.match(result.body.error, /Too many attempts/)
+})

@@ -121,7 +121,7 @@ export function routes(passport) {
   router.post('/logout', (req, res, next) =>
     req.session.destroy((error) => {
       if (error) return next(error)
-      res.clearCookie(cookieName, {
+      res.clearCookie(cookieName(), {
         path: '/',
         httpOnly: true,
         sameSite: 'lax',
