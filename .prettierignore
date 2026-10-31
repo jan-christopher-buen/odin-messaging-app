@@ -2,3 +2,5 @@ package-lock.json
 server/generated
 node_modules
 client/dist
+
+.playwright-mcp
