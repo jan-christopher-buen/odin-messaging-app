@@ -9,5 +9,3 @@ server/generated/
 
 .playwright-mcp/
 .vercel/
-.vercel
-.env*
